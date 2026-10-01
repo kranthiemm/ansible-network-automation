@@ -1,0 +1,9 @@
+*.retry
+*.log
+.ansible/
+outputs/
+.vault_pass*
+.DS_Store
+__pycache__/
+*.pyc
+inventory/host_vars/R1.yml

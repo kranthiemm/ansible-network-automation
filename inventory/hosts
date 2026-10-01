@@ -1,0 +1,5 @@
+[routers]
+R1
+
+[cisco_ios:children]
+routers
