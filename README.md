@@ -16,7 +16,7 @@ snapshot per device to `outputs/facts/`, and prints a summary. Includes
 retry logic for transient connection issues and a sanity check on the
 returned data.
 
-### 02_interface_tatus.yml
+### 02_interface_status.yml
 Connects to all devices in the `cisco_ios` inventory group, execute the commands
 in the ios_command module and store the output and another task to display the 
 output
