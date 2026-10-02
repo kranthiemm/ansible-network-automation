@@ -10,6 +10,9 @@
         - show ip interface brief
         - show version
     register: interface_output
+    retries: 2
+    delaay 5
+    until: interface_output is succeeded
 
   - name: display interface status
     debug:
