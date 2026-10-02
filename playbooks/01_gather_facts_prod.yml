@@ -1,0 +1,59 @@
+# 01_gather_facts_prod.yml
+#
+# Purpose: Connect to every device in the 'cisco_ios' inventory group,
+# pull back key identifying facts (hostname, model, IOS version, serial),
+# save a timestamped snapshot to disk, and print a summary to screen.
+#
+# Usage:
+#   ansible-playbook playbooks/01_gather_facts_prod.yml --ask-vault-pass
+#
+# Requires:
+#   - inventory/group_vars/cisco_ios.yml with connection + vault-encrypted credentials
+#   - outputs/facts/ directory (auto-created if missing)
+
+---
+- name: Gather and archive facts from network devices
+  hosts: cisco_ios
+  gather_facts: no
+
+  vars:
+    facts_output_dir: "{{ playbook_dir }}/../outputs/facts"
+
+  tasks:
+    - name: Gather IOS facts from device
+      ios_facts:
+        gather_subset:
+          - min
+          - hardware
+          - interfaces
+      register: facts_result
+      retries: 2
+      delay: 5
+      until: facts_result is succeeded
+      ignore_errors: yes
+    
+    - name: show failed result
+      fail:
+        msg: "couldn't gather the facts from {{inventory_hostname }}, check connectivity"
+      when: facts_result is failed
+
+    - name: ensure output directory exist
+      file:
+        path: "{{ facts_output_dir }} "
+        state: directory
+      delegate_to: localhost
+    
+    - name: archive facts with timestamp per device in localhost
+      copy:
+        content: "{{facts_result.ansible_facts | to_nice_yaml }}"
+        dest: "{{ facts_output_dir }}/{{inventory_hostname }}_{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}.yml"
+      delegate_to: localhost
+
+    - name: Show key facts on the screen
+      debug:
+        msg:
+          - "Hostname: {{facts_result.ansible_facts.ansible_net_hostname}}"
+          - "Model: {{ facts_result.ansible_facts.ansible_net_model | default('n/a') }}"
+          - "IOS Version: {{ facts_result.ansible_facts.ansible_net_version | default('n/a') }}"
+          - "Serial: {{ facts_result.ansible_facts.ansible_net_serialnum | default('n/a') }}"
+          # 'default("n/a")' prevents a crash if a device doesn't report that field
