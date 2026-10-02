@@ -8,6 +8,7 @@
     ios_command:
       commands:
         - show ip interface brief
+        - show version
     register: interface_output
 
   - name: display interface status
