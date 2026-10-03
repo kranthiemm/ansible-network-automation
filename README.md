@@ -20,3 +20,10 @@ returned data.
 Connects to all devices in the `cisco_ios` inventory group, execute the commands
 in the ios_command module and store the output and another task to display the 
 output
+
+### 03_cdp_neighbors.yml
+Runs `show cdp neighbors detail` via `ios_command` and parses the raw output
+into a clean list of neighbor Device ID + IP address pairs, using a single
+regex capture (two capture groups per match) instead of separate lists +
+`zip`. Includes an `assert` check confirming at least one neighbor was
+actually parsed, rather than silently showing an empty result.
