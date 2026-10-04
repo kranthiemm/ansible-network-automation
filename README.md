@@ -27,3 +27,5 @@ into a clean list of neighbor Device ID + IP address pairs, using a single
 regex capture (two capture groups per match) instead of separate lists +
 `zip`. Includes an `assert` check confirming at least one neighbor was
 actually parsed, rather than silently showing an empty result.
+## Known Issues
+- `02_interface_status.yml` assumes privileged mode is not required - some commands may need enable access on other devices.
