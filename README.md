@@ -29,3 +29,9 @@ regex capture (two capture groups per match) instead of separate lists +
 actually parsed, rather than silently showing an empty result.
 ## Known Issues
 - `02_interface_status.yml` assumes privileged mode is not required - some commands may need enable access on other devices.
+
+### 04_vlan_summary.yml
+Runs `show vlan brief` via `ios_command` and parses the output into VLAN ID +
+Name pairs using a single regex with `multiline=True`, following the same
+no-`zip` pattern from Day 4. Includes an `assert` check confirming at least
+one VLAN was parsed.
