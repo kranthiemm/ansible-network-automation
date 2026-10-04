@@ -1,0 +1,29 @@
+---
+- name: check vlan summary
+  hosts: cisco_ios
+  gather_facts: no
+
+  tasks:
+  - name: run the vlan command
+    ios_command:
+      commands:
+        - show vlan brief
+    register: vlan_output
+    retries: 2
+    delay: 5
+    until: vlan_output is succeeded
+
+  - name: Extrace vlan ID and Name
+    set_fact:
+      vlan_list: "{{ vlan_output.stdout[0] | regex_findall('^(\\d+)\\s+(\\S+)', multiline=True)}}"
+
+  - name: display vlan output
+    debug:
+      var: vlan_list
+  
+  - name: confirm atlest one vlan is parsed
+    assert:
+      that:
+        - vlan_list | length > 0
+      fail_msg: "No VLANs parsed - check output format matches the regex"
+      success_msg: "Parsed {{ vlan_list | length }} VLAN(s)"
