@@ -41,3 +41,10 @@ one VLAN was parsed.
 ## Releases
 See the [Releases](https://github.com/kranthiemm/ansible-network-automation/releases) 
 page for version history and changelogs.
+
+### 06_precedence_check.yml
+Demonstrates Ansible's variable precedence hierarchy using an `ntp_server`
+example defined at three levels (`group_vars/all.yml`, `group_vars/cisco_ios.yml`,
+`inventory/host_vars/R1.yml`) plus a runtime `-e` extra-var override. No
+device connection required - purely resolves variables on the controller
+to reveal which definition wins.
