@@ -1,1 +1,2 @@
 ansible_host: <R1_IP_HERE>
+ntp_server: 10.0.0.3
