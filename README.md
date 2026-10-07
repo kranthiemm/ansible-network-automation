@@ -48,3 +48,10 @@ example defined at three levels (`group_vars/all.yml`, `group_vars/cisco_ios.yml
 `inventory/host_vars/R1.yml`) plus a runtime `-e` extra-var override. No
 device connection required - purely resolves variables on the controller
 to reveal which definition wins.
+
+### 07_render_interface_report.yml
+Renders a markdown interface status report using the `template` module and
+a Jinja2 template (`templates/interface_report.j2`). Loops over
+`ansible_net_interfaces` from `ios_facts` to build a status table, and uses
+an `{% if %}` conditional to generate a separate "Interfaces Down" section
+that only populates when something is actually down.
