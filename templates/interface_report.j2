@@ -1,0 +1,15 @@
+# Interface Report — {{ inventory_hostname }}
+Generated: {{ lookup('pipe', 'date') }}
+
+| Interface | Operational Status | Line Protocol |
+|-----------|---------------------|----------------|
+{% for iface, details in ansible_net_interfaces.items() %}
+| {{ iface }} | {{ details.operstatus | default('n/a') }} | {{ details.lineprotocol | default('n/a') }} |
+{% endfor %}
+
+## Interfaces Down
+{% for iface, details in ansible_net_interfaces.items() %}
+{% if details.operstatus is defined and details.operstatus != 'up' %}
+- **{{ iface }}** is {{ details.operstatus }}
+{% endif %}
+{% endfor %}
