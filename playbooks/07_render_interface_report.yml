@@ -1,0 +1,26 @@
+---
+- name: Render interface status report from facts
+  hosts: cisco_ios
+  gather_facts: no
+
+  vars:
+    reports_dir: "{{playbook_dir}}/../outputs/reports"
+
+  tasks:
+  - name: Gather interface facts
+    ios_facts:
+      gather_subset:
+        - interfaces
+    register: facts_result
+
+  - name: check if directory exist
+    file:
+      path: "{{ reports_dir }}"
+      state: directory
+    delegate_to: localhost
+
+  - name: render the report from template
+    template:
+      src: "{{playbook_dir}}/../templates/interface_report.j2"
+      dest: "{{reports_dir}}/{{ inventory_hostname }}_interfaces.md"
+    delegate_to: localhost
