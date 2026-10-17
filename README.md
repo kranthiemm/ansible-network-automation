@@ -55,3 +55,10 @@ a Jinja2 template (`templates/interface_report.j2`). Loops over
 `ansible_net_interfaces` from `ios_facts` to build a status table, and uses
 an `{% if %}` conditional to generate a separate "Interfaces Down" section
 that only populates when something is actually down.
+
+### 08_critical_interface_check.yml
+Loops over a list of "critical" interfaces (`GigabitEthernet1`, `Loopback0`)
+and checks each one's operational status against `ios_facts` data. Uses
+`when: item in facts_result...` to safely skip any interface name that
+doesn't exist on the device (avoiding a crash), and `assert` to fail loudly
+with a clear message if a critical interface is actually down.
