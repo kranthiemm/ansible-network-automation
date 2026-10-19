@@ -1,0 +1,33 @@
+---
+# tasks file for roles/facts_audit
+- name: Gather IOS facts
+  ios_facts:
+    gather_subset: "{{ facts_audit_gather_subset }}"
+  register: facts_result
+  retries: 2
+  delay: 5
+  until: facts_result is succeeded
+  ignore_errors: yes
+
+- name: Fail clearlly if couldnt be gathered
+  fail:
+    msg: "couldnt gather facts for {{ inventory_hostname }}"
+  when: facts_result is failed
+
+- name: ensure output directory exist
+  file:
+    path: "{{ facts_audit_output_dir }}"
+    state: directory
+  delegate_to: localhost
+
+- name: Archive facts to a timestamped file
+  copy:
+    content: "{{ facts_result.ansible_facts | to_nice_yaml }}"
+    dest: "{{ facts_audit_output_dir }}/{{ inventory_hostname }}_{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}.yml"
+  delegate_to: localhost
+
+- name: show key facts
+  debug:
+    msg: 
+      - "Hostname: {{ facts_result.ansible_facts.ansible_net_hostname }}"
+      - "model: {{ facts_result.ansible_facts.ansible_net_model | default('n/a') }}"
