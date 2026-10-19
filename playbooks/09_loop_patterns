@@ -1,0 +1,51 @@
+---
+- name: Interface audit using loop
+  gather_facts: no
+  hosts: cisco_ios
+
+  vars:
+    expected_interfaces:
+      - {name: GigabitEthernet1, expected_status: up}
+      - {name: Loopback0, expected_status: up}
+      - {name: Loopback1, expected_status: up}
+
+  tasks:
+    - name: Gather Interface facts
+      ios_facts:
+        gather_subset: 
+          - interfaces
+      register: facts_result
+
+    - name: print facts
+      debug:
+        var: facts_result.ansible_facts.ansible_net_interfaces.keys()
+
+    - name: numbered list of interfaces being checked
+      debug:
+        msg: "{{ idx+1 }}. {{ item.name }}"
+      loop: "{{ expected_interfaces }}"
+      loop_control:
+        index_var: idx
+
+    - name: Compare actual vs expected status (clean labels, not full dicts)
+      debug:
+        msg: >-
+          {{ item.name }}: expected={{ item.expected_status }},
+          actual={{ facts_result.ansible_facts.ansible_net_interfaces[item.name].operstatus | default('N/A') }}
+      loop: "{{ expected_interfaces }}"
+      loop_control:
+        label: "{{ item.name }}"
+    
+    - name: Build down-interfaces list, step by step
+      set_fact:
+        down_interfaces: []
+
+    - name: Check each interface and add to the list if it's down
+      set_fact:
+        down_interfaces: "{{ down_interfaces + [item.key] }}"
+      loop: "{{ facts_result.ansible_facts.ansible_net_interfaces | dict2items }}"
+      when: item.value.operstatus != 'up'
+
+    - name: Show the filtered down-interface list
+      debug:
+        msg: "Interfaces NOT up: {{ down_interfaces }}"
