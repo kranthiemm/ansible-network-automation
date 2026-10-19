@@ -94,3 +94,12 @@ task in the block fails, execution stops immediately and jumps to
 `rescue:` to run a fallback connectivity check instead. `always:` runs
 regardless of which path was taken, used here to log that the check was
 attempted either way.
+
+### 12_tagged_audit.yml
+Splits a multi-section audit (facts, interfaces, CDP) into tagged groups,
+demonstrating `--tags` (run only a specific section), `--skip-tags` (run
+everything except one section), and `--list-tags` (preview available tags
+without running anything). A task can carry multiple tags at once (the CDP
+section is tagged both `cdp` and `slow`). Each tagged group is kept
+self-contained - no task depends on a variable from a task that might be
+skipped independently.
