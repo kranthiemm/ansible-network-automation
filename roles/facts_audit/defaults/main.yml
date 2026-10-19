@@ -1,0 +1,4 @@
+facts_audit_gather_subset:
+  - min
+  - hardware
+facts_audit_output_dir: "{{ playbook_dir }}/../outputs/facts"
