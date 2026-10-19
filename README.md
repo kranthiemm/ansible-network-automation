@@ -70,3 +70,11 @@ when looping over complex dicts, and `dict2items` + `default([])` to build
 a filtered "down interfaces" list by appending matching items one at a time
 across loop iterations - the step-by-step equivalent of a single-line
 `selectattr`/`map` filter chain.
+
+### 10_facts_audit_role.yml + roles/facts_audit
+Converts the facts-gathering logic into a reusable role instead of a
+standalone playbook. `tasks/main.yml` holds the fixed logic (gather, check,
+archive, display); `defaults/main.yml` holds overridable settings
+(`gather_subset`, output directory) that any calling playbook can override
+via `vars:` without touching the role itself. The calling playbook itself
+is now just a few lines - all real logic lives in the role.
