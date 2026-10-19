@@ -78,3 +78,10 @@ archive, display); `defaults/main.yml` holds overridable settings
 (`gather_subset`, output directory) that any calling playbook can override
 via `vars:` without touching the role itself. The calling playbook itself
 is now just a few lines - all real logic lives in the role.
+
+## Known Issues
+As of Day 15, `inventory/group_vars/cisco_ios.yml`'s vault password and
+  `.vault_pass` may be out of sync after rekey practice - results in
+  "Decryption failed" on playbooks using `cisco_ios` group vars without
+  `--ask-vault-pass`. Needs regenerating `ansible_password` to match
+  whichever password `.vault_pass` currently holds.
