@@ -62,3 +62,11 @@ and checks each one's operational status against `ios_facts` data. Uses
 `when: item in facts_result...` to safely skip any interface name that
 doesn't exist on the device (avoiding a crash), and `assert` to fail loudly
 with a clear message if a critical interface is actually down.
+
+### 09_loop_interfaces.yml
+Demonstrates advanced loop patterns beyond basic `loop:` usage: `index_var`
+for numbered output, `loop_control: label` for clean task-header display
+when looping over complex dicts, and `dict2items` + `default([])` to build
+a filtered "down interfaces" list by appending matching items one at a time
+across loop iterations - the step-by-step equivalent of a single-line
+`selectattr`/`map` filter chain.
