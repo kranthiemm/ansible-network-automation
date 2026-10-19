@@ -85,3 +85,12 @@ As of Day 15, `inventory/group_vars/cisco_ios.yml`'s vault password and
   "Decryption failed" on playbooks using `cisco_ios` group vars without
   `--ask-vault-pass`. Needs regenerating `ansible_password` to match
   whichever password `.vault_pass` currently holds.
+
+### 11_block_rescue_demo.yml
+Demonstrates `block`/`rescue`/`always` error handling - fundamentally
+different from `retries`/`until` (which repeats the same action hoping it
+eventually succeeds). Attempts to gather facts inside a `block:`; if any
+task in the block fails, execution stops immediately and jumps to
+`rescue:` to run a fallback connectivity check instead. `always:` runs
+regardless of which path was taken, used here to log that the check was
+attempted either way.
