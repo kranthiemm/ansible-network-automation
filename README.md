@@ -103,3 +103,15 @@ without running anything). A task can carry multiple tags at once (the CDP
 section is tagged both `cdp` and `slow`). Each tagged group is kept
 self-contained - no task depends on a variable from a task that might be
 skipped independently.
+
+### inventory/dynamic/dynamic_inventory.py
+A dynamic inventory script - reads device data from `devices.csv` and
+outputs Ansible's expected JSON inventory format (`_meta.hostvars` +
+group-to-hosts mapping). Demonstrates the core dynamic inventory contract:
+any executable that prints this JSON shape when run counts as a valid
+inventory source, regardless of what it reads from internally (a file, an
+API, a database). Secrets are deliberately kept OUT of the script - a
+symlinked `group_vars` folder (`inventory/dynamic/group_vars ->
+../group_vars`) lets Ansible's normal vault-encrypted group_vars loading
+work the same way it does for the static inventory, avoiding
+duplicated/hardcoded credentials inside the inventory script itself.
