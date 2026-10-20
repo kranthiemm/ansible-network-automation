@@ -1,0 +1,2 @@
+hostname,ansible_host,ansible_user,device_type
+R1,3.15.245.169,netbrain,router
