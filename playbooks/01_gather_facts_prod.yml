@@ -21,7 +21,7 @@
 
   tasks:
     - name: Gather IOS facts from device
-      ios_facts:
+      cisco.ios.ios_facts:
         gather_subset:
           - min
           - hardware
@@ -39,7 +39,7 @@
 
     - name: ensure output directory exist
       file:
-        path: "{{ facts_output_dir }} "
+        path: "{{ facts_output_dir }}"
         state: directory
       delegate_to: localhost
     
