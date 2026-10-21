@@ -8,3 +8,4 @@ __pycache__/
 *.pyc
 inventory/host_vars/R1.yml
 inventory/dynamic/devices.csv
+collections/
