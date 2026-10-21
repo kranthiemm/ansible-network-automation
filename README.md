@@ -115,3 +115,18 @@ symlinked `group_vars` folder (`inventory/dynamic/group_vars ->
 ../group_vars`) lets Ansible's normal vault-encrypted group_vars loading
 work the same way it does for the static inventory, avoiding
 duplicated/hardcoded credentials inside the inventory script itself.
+
+## Collections & Dependencies
+Collections are pinned via `requirements.yml` (not left to whatever happens
+to be globally installed) and installed into a project-local
+`./collections` folder via `ansible.cfg`'s `collections_path` setting -
+keeps the project self-contained and reproducible, rather than depending on
+a machine-wide `~/.ansible/collections` default. Modules now use fully-
+qualified names (`cisco.ios.ios_facts`) instead of short names, removing
+ambiguity about which collection a module comes from.
+
+## Known Issues
+`cisco.ios` 11.6.0 shows warnings about not supporting ansible-core
+  2.15.13 (the installed version). Still functions correctly in practice,
+  but `requirements.yml` should probably be tightened to
+  `>=5.0.0,<11.0.0` to avoid the warning on fresh installs.
