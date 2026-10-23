@@ -28,6 +28,6 @@
 
 - name: show key facts
   debug:
-    msg: 
+    msg:
       - "Hostname: {{ facts_result.ansible_facts.ansible_net_hostname }}"
       - "model: {{ facts_result.ansible_facts.ansible_net_model | default('n/a') }}"

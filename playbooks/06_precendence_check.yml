@@ -4,6 +4,6 @@
   gather_facts: no
 
   tasks:
-  - name: show which ntp server actually won
-    debug:
-      msg: "Resolved ntp_server = {{ ntp_server }}"
+    - name: show which ntp server actually won
+      debug:
+        msg: "Resolved ntp_server = {{ ntp_server }}"

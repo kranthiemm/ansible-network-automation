@@ -1,19 +1,19 @@
---- 
+---
 - name: interface status on R1
   hosts: cisco_ios
   gather_facts: no
 
   tasks:
-  - name: execute the command and store output
-    ios_command:
-      commands:
-        - show ip interface brief
-        - show version
-    register: interface_output
-    retries: 2
-    delay: 5
-    until: interface_output is succeeded
+    - name: execute the command and store output
+      ios_command:
+        commands:
+          - show ip interface brief
+          - show version
+      register: interface_output
+      retries: 2
+      delay: 5
+      until: interface_output is succeeded
 
-  - name: display interface status
-    debug:
-      var: interface_output.stdout_lines
+    - name: display interface status
+      debug:
+        var: interface_output.stdout_lines

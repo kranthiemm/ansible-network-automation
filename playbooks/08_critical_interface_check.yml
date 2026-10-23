@@ -4,13 +4,13 @@
   gather_facts: no
 
   tasks:
-  - name: Gather interface facts
-    ios_facts:
-      gather_subset:
-        - interfaces
-    register: facts_result
+    - name: Gather interface facts
+      ios_facts:
+        gather_subset:
+          - interfaces
+      register: facts_result
 
-  - name: check each critical interface individually
-    debug:
-      msg: "{{ facts_result.ansible_facts.ansible_net_interfaces[item] }}"
-    loop: "{{ facts_result.ansible_facts.ansible_net_interfaces.keys() | list }}"
+    - name: check each critical interface individually
+      debug:
+        msg: "{{ facts_result.ansible_facts.ansible_net_interfaces[item] }}"
+      loop: "{{ facts_result.ansible_facts.ansible_net_interfaces.keys() | list }}"
