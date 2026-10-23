@@ -130,3 +130,25 @@ ambiguity about which collection a module comes from.
   2.15.13 (the installed version). Still functions correctly in practice,
   but `requirements.yml` should probably be tightened to
   `>=5.0.0,<11.0.0` to avoid the warning on fresh installs.
+
+## Linting & Check Mode
+
+Introduced `yamllint` and `ansible-lint` as part of the regular workflow,
+plus `--check --diff` as a dry-run safety habit before real changes.
+
+`.yamllint` config overrides the `truthy` rule to allow `yes`/`no` (used
+throughout for `gather_facts: no`). A full pass across `playbooks/`,
+`inventory/`, and `roles/` caught a long tail of recurring issues from
+earlier days - missing trailing newlines, trailing whitespace, inconsistent
+task-list indentation - the exact bug class behind several debugging
+sessions (the "facts " folder-with-a-space incident, vault block
+corruption). `01_gather_facts_prod.yml` was brought to a clean pass on
+ansible-lint's strictest `production` profile: FQCN on every module
+(including Ansible builtins like `ansible.builtin.file`), consistent task
+naming, explicit `mode:` on file/copy operations (avoiding unpredictable
+permissions from an unset umask), and clean Jinja2 spacing throughout.
+
+`--check --diff` was verified against the real device: it computed and
+displayed the full proposed file content (160 lines of facts data) without
+actually writing anything to disk - the same mechanism the CI/CD pipeline
+will use as a dry-run gate before any real deploy.
