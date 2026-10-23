@@ -152,3 +152,16 @@ permissions from an unset umask), and clean Jinja2 spacing throughout.
 displayed the full proposed file content (160 lines of facts data) without
 actually writing anything to disk - the same mechanism the CI/CD pipeline
 will use as a dry-run gate before any real deploy.
+
+## CI/CD Pipeline
+
+### .github/workflows/syntax-check.yml
+First GitHub Actions workflow - triggers on every push/PR to `main`, spins
+up a fresh Ubuntu runner, installs Ansible + the `cisco.ios` collection
+(via `requirements.yml`), then runs `--syntax-check` against every playbook
+in the repo. Uses a placeholder `.vault_pass` file since `ansible.cfg`'s
+`vault_password_file` setting makes Ansible look for it unconditionally,
+even for syntax-only checks that never decrypt real data - the real vault
+password doesn't reach CI until GitHub Secrets are wired up (Day 24).
+Hosted on GitHub's own runner (not self-hosted), so it validates structure
+only - it has no network path to reach R1.
