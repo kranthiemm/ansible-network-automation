@@ -4,39 +4,39 @@
   gather_facts: no
 
   tasks:
-  - name: gather basic facts
-    ios_facts:
-      gather_subset:
-        - min
-        - hardware
-    register: facts_result
-    tags: [facts]
+    - name: gather basic facts
+      ios_facts:
+        gather_subset:
+          - min
+          - hardware
+      register: facts_result
+      tags: [facts]
 
-  - name: show basic facts
-    debug:
-      msg: "{{ facts_result.ansible_facts }}"
-    tags: [facts]
+    - name: show basic facts
+      debug:
+        msg: "{{ facts_result.ansible_facts }}"
+      tags: [facts]
 
-  - name: show interface status
-    ios_command:
-      commands:
-        - show ip int br
-    register: interfaces_output
-    tags: [interfaces]
+    - name: show interface status
+      ios_command:
+        commands:
+          - show ip int br
+      register: interfaces_output
+      tags: [interfaces]
 
-  - name: show interface output
-    debug:
-      var: interfaces_output.stdout_lines
-    tags: [interfaces]
+    - name: show interface output
+      debug:
+        var: interfaces_output.stdout_lines
+      tags: [interfaces]
 
-  - name: check cdp neighbors
-    ios_command:
-      commands:
-        - show cdp neighbor detail
-    register: cdp_output
-    tags: [cdp, slow]
+    - name: check cdp neighbors
+      ios_command:
+        commands:
+          - show cdp neighbor detail
+      register: cdp_output
+      tags: [cdp, slow]
 
-  - name: show cdp neighbors
-    debug:
-      var: cdp_output
-    tags: [cdp, slow]   
+    - name: show cdp neighbors
+      debug:
+        var: cdp_output
+      tags: [cdp, slow]

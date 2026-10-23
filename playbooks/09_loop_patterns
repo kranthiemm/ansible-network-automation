@@ -35,14 +35,9 @@
       loop: "{{ expected_interfaces }}"
       loop_control:
         label: "{{ item.name }}"
-    
-    - name: Build down-interfaces list, step by step
-      set_fact:
-        down_interfaces: []
-
     - name: Check each interface and add to the list if it's down
       set_fact:
-        down_interfaces: "{{ down_interfaces + [item.key] }}"
+        down_interfaces: "{{ down_interfaces | default([]) + [item.key] }}"
       loop: "{{ facts_result.ansible_facts.ansible_net_interfaces | dict2items }}"
       when: item.value.operstatus != 'up'
 

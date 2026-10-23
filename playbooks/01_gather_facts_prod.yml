@@ -31,29 +31,30 @@
       delay: 5
       until: facts_result is succeeded
       ignore_errors: yes
-    
-    - name: show failed result
-      fail:
-        msg: "couldn't gather the facts from {{inventory_hostname }}, check connectivity"
+
+    - name: Show failed result
+      ansible.builtin.fail:
+        msg: "couldn't gather the facts from {{ inventory_hostname }}, check connectivity"
       when: facts_result is failed
 
-    - name: ensure output directory exist
-      file:
+    - name: Ensure output directory exists
+      ansible.builtin.file:
         path: "{{ facts_output_dir }}"
         state: directory
+        mode: '0755'
       delegate_to: localhost
-    
-    - name: archive facts with timestamp per device in localhost
-      copy:
-        content: "{{facts_result.ansible_facts | to_nice_yaml }}"
-        dest: "{{ facts_output_dir }}/{{inventory_hostname }}_{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}.yml"
+
+    - name: Archive facts with timestamp per device on localhost
+      ansible.builtin.copy:
+        content: "{{ facts_result.ansible_facts | to_nice_yaml }}"
+        dest: "{{ facts_output_dir }}/{{ inventory_hostname }}_{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}.yml"
+        mode: '0644'
       delegate_to: localhost
 
     - name: Show key facts on the screen
-      debug:
+      ansible.builtin.debug:
         msg:
-          - "Hostname: {{facts_result.ansible_facts.ansible_net_hostname}}"
+          - "Hostname: {{ facts_result.ansible_facts.ansible_net_hostname }}"
           - "Model: {{ facts_result.ansible_facts.ansible_net_model | default('n/a') }}"
           - "IOS Version: {{ facts_result.ansible_facts.ansible_net_version | default('n/a') }}"
           - "Serial: {{ facts_result.ansible_facts.ansible_net_serialnum | default('n/a') }}"
-          # 'default("n/a")' prevents a crash if a device doesn't report that field

@@ -1,3 +1,4 @@
+---
 facts_audit_gather_subset:
   - min
   - hardware
