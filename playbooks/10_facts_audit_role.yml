@@ -1,6 +1,6 @@
 ---
 - name: Run facts audit role
-  gather_facts: no
+  gather_facts: false
   hosts: cisco_ios
 
   roles:

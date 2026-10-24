@@ -1,9 +1,9 @@
 ---
 - name: Prove Variable precendence order
   hosts: R1
-  gather_facts: no
+  gather_facts: false
 
   tasks:
-    - name: show which ntp server actually won
-      debug:
-        msg: "Resolved ntp_server = {{ ntp_server }}"
+    - name: Show which ntp server actually won
+      ansible.builtin.debug:
+        msg: Resolved ntp_server = {{ ntp_server }}

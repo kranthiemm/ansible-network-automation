@@ -11,36 +11,41 @@
 
   tasks:
     - name: Gather Interface facts
-      ios_facts:
-        gather_subset: 
+      cisco.ios.ios_facts:
+        gather_subset:
           - interfaces
       register: facts_result
 
-    - name: print facts
-      debug:
+    - name: Print facts
+      ansible.builtin.debug:
         var: facts_result.ansible_facts.ansible_net_interfaces.keys()
 
-    - name: numbered list of interfaces being checked
-      debug:
-        msg: "{{ idx+1 }}. {{ item.name }}"
+    - name: Numbered list of interfaces being checked
+      ansible.builtin.debug:
+        msg: "{{ idx + 1 }}. {{ item.name }}"
       loop: "{{ expected_interfaces }}"
       loop_control:
         index_var: idx
 
     - name: Compare actual vs expected status (clean labels, not full dicts)
-      debug:
+      ansible.builtin.debug:
         msg: >-
           {{ item.name }}: expected={{ item.expected_status }},
           actual={{ facts_result.ansible_facts.ansible_net_interfaces[item.name].operstatus | default('N/A') }}
       loop: "{{ expected_interfaces }}"
       loop_control:
         label: "{{ item.name }}"
+
+    - name: Initialize the down-interfaces list
+      ansible.builtin.set_fact:
+        down_interfaces: []
+
     - name: Check each interface and add to the list if it's down
-      set_fact:
-        down_interfaces: "{{ down_interfaces | default([]) + [item.key] }}"
+      ansible.builtin.set_fact:
+        down_interfaces: "{{ down_interfaces + [item.key] }}"
       loop: "{{ facts_result.ansible_facts.ansible_net_interfaces | dict2items }}"
       when: item.value.operstatus != 'up'
 
     - name: Show the filtered down-interface list
-      debug:
+      ansible.builtin.debug:
         msg: "Interfaces NOT up: {{ down_interfaces }}"

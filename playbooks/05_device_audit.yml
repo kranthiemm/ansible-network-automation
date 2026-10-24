@@ -1,12 +1,19 @@
-# 00_device_audit.yml
+# 05_device_audit.yml
 #
 # Runs the full suite of device checks in sequence:
 # facts -> interface status -> CDP neighbors -> VLAN summary
 #
 # Usage:
-#   ansible-playbook playbooks/00_device_audit.yml --ask-vault-pass
+#   ansible-playbook playbooks/05_device_audit.yml --ask-vault-pass
 ---
-- import_playbook: 01_gather_facts_prod.yml
-- import_playbook: 02_interface_status.yml
-- import_playbook: 03_cdp_neighborss.yml
-- import_playbook: 04_vlan_summary.yml
+- name: Gather device facts
+  import_playbook: "01_gather_facts_prod.yml"
+
+- name: Check interface status
+  import_playbook: "02_interface_status.yml"
+
+- name: Check CDP neighbors
+  import_playbook: "03_cdp_neighborss.yml"
+
+- name: Check VLAN summary
+  import_playbook: "04_vlan_summary.yml"

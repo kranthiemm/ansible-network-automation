@@ -14,7 +14,7 @@
 ---
 - name: Gather and archive facts from network devices
   hosts: cisco_ios
-  gather_facts: no
+  gather_facts: false
 
   vars:
     facts_output_dir: "{{ playbook_dir }}/../outputs/facts"
@@ -30,25 +30,25 @@
       retries: 2
       delay: 5
       until: facts_result is succeeded
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Show failed result
       ansible.builtin.fail:
-        msg: "couldn't gather the facts from {{ inventory_hostname }}, check connectivity"
+        msg: couldn't gather the facts from {{ inventory_hostname }}, check connectivity
       when: facts_result is failed
 
     - name: Ensure output directory exists
       ansible.builtin.file:
         path: "{{ facts_output_dir }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
       delegate_to: localhost
 
     - name: Archive facts with timestamp per device on localhost
       ansible.builtin.copy:
         content: "{{ facts_result.ansible_facts | to_nice_yaml }}"
         dest: "{{ facts_output_dir }}/{{ inventory_hostname }}_{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}.yml"
-        mode: '0644'
+        mode: "0644"
       delegate_to: localhost
 
     - name: Show key facts on the screen
