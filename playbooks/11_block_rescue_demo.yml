@@ -1,38 +1,38 @@
 ---
 - name: Block/rescue/always error handling demo
   hosts: cisco_ios
-  gather_facts: no
+  gather_facts: false
 
   tasks:
     - name: Attempt full facts gathering, with fallback on failure
       block:
         - name: Try gathering facts
-          ios_facts:
+          cisco.ios.ios_facts:
             gather_subset:
               - min
               - hardware
           register: facts_result
 
         - name: Report success
-          debug:
+          ansible.builtin.debug:
             msg: "Facts gathered successfully: {{ facts_result.ansible_facts.ansible_net_hostname }}"
 
       rescue:
         - name: Facts gathering failed - fall back to a basic command check
-          debug:
-            msg: "Facts gathering failed - attempting basic connectivity check instead"
+          ansible.builtin.debug:
+            msg: Facts gathering failed - attempting basic connectivity check instead
 
         - name: Basic fallback check
-          ios_command:
+          cisco.ios.ios_command:
             commands:
               - show clock
           register: fallback_result
 
         - name: Report fallback result
-          debug:
+          ansible.builtin.debug:
             msg: "Fallback check succeeded: {{ fallback_result.stdout_lines }}"
 
       always:
         - name: Log that this check was attempted, regardless of outcome
-          debug:
-            msg: "Facts/connectivity check attempted on {{ inventory_hostname }} at {{ lookup('pipe', 'date') }}"
+          ansible.builtin.debug:
+            msg: Facts/connectivity check attempted on {{ inventory_hostname }} at {{ lookup('pipe', 'date') }}

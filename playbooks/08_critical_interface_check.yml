@@ -1,16 +1,16 @@
 ---
-- name: critical interface check
+- name: Critical interface check
   hosts: cisco_ios
-  gather_facts: no
+  gather_facts: false
 
   tasks:
     - name: Gather interface facts
-      ios_facts:
+      cisco.ios.ios_facts:
         gather_subset:
           - interfaces
       register: facts_result
 
-    - name: check each critical interface individually
-      debug:
+    - name: Check each critical interface individually
+      ansible.builtin.debug:
         msg: "{{ facts_result.ansible_facts.ansible_net_interfaces[item] }}"
       loop: "{{ facts_result.ansible_facts.ansible_net_interfaces.keys() | list }}"

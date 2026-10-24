@@ -1,11 +1,11 @@
 ---
-- name: cdp neighbors on device
+- name: Cdp neighbors on device
   hosts: cisco_ios
-  gather_facts: no
+  gather_facts: false
 
   tasks:
-    - name: execute the command
-      ios_command:
+    - name: Execute the command
+      cisco.ios.ios_command:
         commands:
           - show cdp neighbor detail
       register: cdp_output
@@ -13,24 +13,24 @@
       delay: 5
       until: cdp_output is succeeded
 
-    - name: exteact neighbot device id
-      set_fact:
+    - name: Exteact neighbot device id
+      ansible.builtin.set_fact:
         neighbor_ids: "{{ cdp_output.stdout[0] | regex_findall('Device ID:\\s*(\\S+)') }}"
 
     - name: Extract Device ID + IP pairs together in one pass
-      set_fact:
+      ansible.builtin.set_fact:
         cdp_neighbors: >-
           {{ cdp_output.stdout[0] | regex_findall(
             'Device ID:\\s*(\\S+)(?:(?!Device ID:)[\\s\\S])*?IP address:\\s*([\\d.]+)'
           ) }}
 
     - name: Display the parsed neighbor list
-      debug:
+      ansible.builtin.debug:
         var: cdp_neighbors
 
     - name: Confirm at least one neighbor was parsed
-      assert:
+      ansible.builtin.assert:
         that:
           - cdp_neighbors | length > 0
-        fail_msg: "No CDP neighbors parsed - check CDP is enabled, or output format doesn't match"
-        success_msg: "Parsed {{ cdp_neighbors | length }} CDP neighbor(s)"
+        fail_msg: No CDP neighbors parsed - check CDP is enabled, or output format doesn't match
+        success_msg: Parsed {{ cdp_neighbors | length }} CDP neighbor(s)

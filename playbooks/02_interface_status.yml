@@ -1,11 +1,11 @@
 ---
-- name: interface status on R1
+- name: Interface status on R1
   hosts: cisco_ios
-  gather_facts: no
+  gather_facts: false
 
   tasks:
-    - name: execute the command and store output
-      ios_command:
+    - name: Execute the command and store output
+      cisco.ios.ios_command:
         commands:
           - show ip interface brief
           - show version
@@ -14,6 +14,6 @@
       delay: 5
       until: interface_output is succeeded
 
-    - name: display interface status
-      debug:
+    - name: Display interface status
+      ansible.builtin.debug:
         var: interface_output.stdout_lines

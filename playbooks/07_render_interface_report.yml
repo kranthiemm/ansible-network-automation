@@ -1,26 +1,28 @@
 ---
 - name: Render interface status report from facts
   hosts: cisco_ios
-  gather_facts: no
+  gather_facts: false
 
   vars:
-    reports_dir: "{{playbook_dir}}/../outputs/reports"
+    reports_dir: "{{ playbook_dir }}/../outputs/reports"
 
   tasks:
     - name: Gather interface facts
-      ios_facts:
+      cisco.ios.ios_facts:
         gather_subset:
           - interfaces
       register: facts_result
 
-    - name: check if directory exist
-      file:
+    - name: Check if directory exist
+      ansible.builtin.file:
         path: "{{ reports_dir }}"
         state: directory
+        mode: '0755'
       delegate_to: localhost
 
-    - name: render the report from template
-      template:
-        src: "{{playbook_dir}}/../templates/interface_report.j2"
-        dest: "{{reports_dir}}/{{ inventory_hostname }}_interfaces.md"
+    - name: Render the report from template
+      ansible.builtin.template:
+        src: templates/interface_report.j2
+        dest: "{{ reports_dir }}/{{ inventory_hostname }}_interfaces.md"
+        mode: '0644'
       delegate_to: localhost
