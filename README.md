@@ -1,11 +1,17 @@
 # Ansible Network Automation
 
-30-day build: one Ansible/Git example per day, each committed and pushed on completion.
+Ansible playbooks for network device automation - fact gathering, status
+checks, and discovery - built and version-controlled incrementally, with
+a GitHub Actions CI/CD pipeline in progress.
 
 ## Structure
-- `inventory/` — device inventory
-- `playbooks/` — daily example playbooks
+- `inventory/` — device inventory (static + dynamic)
+- `playbooks/` — example playbooks
+- `playbooks/templates/` — Jinja2 templates used by playbooks
+- `roles/` — reusable roles
 - `ansible.cfg` — project config
+- `requirements.yml` — pinned collection dependencies
+- `.github/workflows/` — CI/CD pipeline definitions
 
 ## Playbooks
 
@@ -17,30 +23,27 @@ retry logic for transient connection issues and a sanity check on the
 returned data.
 
 ### 02_interface_status.yml
-Connects to all devices in the `cisco_ios` inventory group, execute the commands
-in the ios_command module and store the output and another task to display the 
-output
+Connects to all devices in the `cisco_ios` inventory group, executes
+`show ip interface brief` and `show version` via `ios_command`, stores the
+output, and displays it.
 
-### 03_cdp_neighbors.yml
+### 03_cdp_neighborss.yml
 Runs `show cdp neighbors detail` via `ios_command` and parses the raw output
 into a clean list of neighbor Device ID + IP address pairs, using a single
 regex capture (two capture groups per match) instead of separate lists +
 `zip`. Includes an `assert` check confirming at least one neighbor was
 actually parsed, rather than silently showing an empty result.
 
-## Known Issues
-- `02_interface_status.yml` assumes privileged mode is not required - some 
-commands may need enable access on other devices.
-
 ### 04_vlan_summary.yml
 Runs `show vlan brief` via `ios_command` and parses the output into VLAN ID +
 Name pairs using a single regex with `multiline=True`, following the same
-no-`zip` pattern from Day 4. Includes an `assert` check confirming at least
-one VLAN was parsed.
+no-`zip` pattern as `03_cdp_neighborss.yml`. Includes an `assert` check
+confirming at least one VLAN was parsed.
 
-## Releases
-See the [Releases](https://github.com/kranthiemm/ansible-network-automation/releases) 
-page for version history and changelogs.
+### 05_device_audit.yml
+A combined entry point that chains the four checks above in sequence via
+`import_playbook` — facts, interface status, CDP neighbors, VLAN summary —
+so the full audit suite can be run with a single command instead of four.
 
 ### 06_precedence_check.yml
 Demonstrates Ansible's variable precedence hierarchy using an `ntp_server`
@@ -51,7 +54,7 @@ to reveal which definition wins.
 
 ### 07_render_interface_report.yml
 Renders a markdown interface status report using the `template` module and
-a Jinja2 template (`templates/interface_report.j2`). Loops over
+a Jinja2 template (`playbooks/templates/interface_report.j2`). Loops over
 `ansible_net_interfaces` from `ios_facts` to build a status table, and uses
 an `{% if %}` conditional to generate a separate "Interfaces Down" section
 that only populates when something is actually down.
@@ -63,13 +66,15 @@ and checks each one's operational status against `ios_facts` data. Uses
 doesn't exist on the device (avoiding a crash), and `assert` to fail loudly
 with a clear message if a critical interface is actually down.
 
-### 09_loop_interfaces.yml
+### 09_loop_patterns.yml
 Demonstrates advanced loop patterns beyond basic `loop:` usage: `index_var`
 for numbered output, `loop_control: label` for clean task-header display
-when looping over complex dicts, and `dict2items` + `default([])` to build
-a filtered "down interfaces" list by appending matching items one at a time
-across loop iterations - the step-by-step equivalent of a single-line
-`selectattr`/`map` filter chain.
+when looping over complex dicts, and `dict2items` to build a filtered
+"down interfaces" list. The list is explicitly initialized with an empty
+`set_fact` *before* the loop — a `default([])` filter inline inside the
+loop's own task isn't enough, since that task never runs at all if every
+interface is up (the condition is false for every iteration), leaving the
+variable genuinely undefined rather than merely empty.
 
 ### 10_facts_audit_role.yml + roles/facts_audit
 Converts the facts-gathering logic into a reusable role instead of a
@@ -78,13 +83,6 @@ archive, display); `defaults/main.yml` holds overridable settings
 (`gather_subset`, output directory) that any calling playbook can override
 via `vars:` without touching the role itself. The calling playbook itself
 is now just a few lines - all real logic lives in the role.
-
-## Known Issues
-As of Day 15, `inventory/group_vars/cisco_ios.yml`'s vault password and
-  `.vault_pass` may be out of sync after rekey practice - results in
-  "Decryption failed" on playbooks using `cisco_ios` group vars without
-  `--ask-vault-pass`. Needs regenerating `ansible_password` to match
-  whichever password `.vault_pass` currently holds.
 
 ### 11_block_rescue_demo.yml
 Demonstrates `block`/`rescue`/`always` error handling - fundamentally
@@ -121,37 +119,23 @@ Collections are pinned via `requirements.yml` (not left to whatever happens
 to be globally installed) and installed into a project-local
 `./collections` folder via `ansible.cfg`'s `collections_path` setting -
 keeps the project self-contained and reproducible, rather than depending on
-a machine-wide `~/.ansible/collections` default. Modules now use fully-
-qualified names (`cisco.ios.ios_facts`) instead of short names, removing
-ambiguity about which collection a module comes from.
-
-## Known Issues
-`cisco.ios` 11.6.0 shows warnings about not supporting ansible-core
-  2.15.13 (the installed version). Still functions correctly in practice,
-  but `requirements.yml` should probably be tightened to
-  `>=5.0.0,<11.0.0` to avoid the warning on fresh installs.
+a machine-wide `~/.ansible/collections` default. Modules use fully-
+qualified names (`cisco.ios.ios_facts`, `ansible.builtin.*`) throughout,
+removing ambiguity about which collection a module comes from.
 
 ## Linting & Check Mode
+`yamllint` and `ansible-lint` are run across the whole repo, not just
+individual files. `.yamllint` overrides the `truthy` rule to allow
+`yes`/`no` (used throughout for `gather_facts: no`). The entire repo
+(`playbooks/`, `roles/`, `inventory/`) passes `ansible-lint` at its
+strictest `production` profile with zero findings - FQCN on every module,
+consistent task naming, explicit `mode:` on all file/copy operations, clean
+Jinja2 spacing, and valid role metadata throughout.
 
-Introduced `yamllint` and `ansible-lint` as part of the regular workflow,
-plus `--check --diff` as a dry-run safety habit before real changes.
-
-`.yamllint` config overrides the `truthy` rule to allow `yes`/`no` (used
-throughout for `gather_facts: no`). A full pass across `playbooks/`,
-`inventory/`, and `roles/` caught a long tail of recurring issues from
-earlier days - missing trailing newlines, trailing whitespace, inconsistent
-task-list indentation - the exact bug class behind several debugging
-sessions (the "facts " folder-with-a-space incident, vault block
-corruption). `01_gather_facts_prod.yml` was brought to a clean pass on
-ansible-lint's strictest `production` profile: FQCN on every module
-(including Ansible builtins like `ansible.builtin.file`), consistent task
-naming, explicit `mode:` on file/copy operations (avoiding unpredictable
-permissions from an unset umask), and clean Jinja2 spacing throughout.
-
-`--check --diff` was verified against the real device: it computed and
-displayed the full proposed file content (160 lines of facts data) without
-actually writing anything to disk - the same mechanism the CI/CD pipeline
-will use as a dry-run gate before any real deploy.
+`--check --diff` is used as a dry-run safety habit before real changes: it
+computes and displays the full proposed output without actually writing
+anything to disk - the same mechanism the CI/CD pipeline uses as a dry-run
+gate before any real deploy.
 
 ## CI/CD Pipeline
 
@@ -162,6 +146,23 @@ up a fresh Ubuntu runner, installs Ansible + the `cisco.ios` collection
 in the repo. Uses a placeholder `.vault_pass` file since `ansible.cfg`'s
 `vault_password_file` setting makes Ansible look for it unconditionally,
 even for syntax-only checks that never decrypt real data - the real vault
-password doesn't reach CI until GitHub Secrets are wired up (Day 24).
-Hosted on GitHub's own runner (not self-hosted), so it validates structure
-only - it has no network path to reach R1.
+password doesn't reach CI until GitHub Secrets are wired up. Hosted on
+GitHub's own runner (not self-hosted), so it validates structure only - it
+has no network path to reach the lab device.
+
+## Releases
+See the [Releases](https://github.com/kranthiemm/ansible-network-automation/releases)
+page for version history and changelogs.
+
+## Known Issues
+- `02_interface_status.yml` assumes privileged mode is not required - some
+  commands may need enable access on other devices.
+- `cisco.ios` 11.6.0 shows warnings about not supporting ansible-core
+  2.15.13 (the installed version). Still functions correctly in practice,
+  but `requirements.yml` should probably be tightened to
+  `>=5.0.0,<11.0.0` to avoid the warning on fresh installs.
+- The CI/CD pipeline currently only covers syntax-checking (hosted runner).
+  Stages requiring device access (check-mode, deploy) need either a
+  self-hosted runner or confirmation the hosted runner can reach the lab
+  device's public IP directly - pending internal IT review before
+  proceeding.
