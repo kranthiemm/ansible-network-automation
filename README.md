@@ -166,3 +166,20 @@ page for version history and changelogs.
   self-hosted runner or confirmation the hosted runner can reach the lab
   device's public IP directly - pending internal IT review before
   proceeding.
+
+  ## Compliance & Remediation
+
+Playbooks prefixed `000_` are capable of making real configuration changes
+to devices - every other playbook in this project is strictly read-only.
+Golden (desired) configs live in `golden_configs/`, one YAML file per
+compliance domain (e.g. `ntp.yaml`, `vlans.yaml`) - loaded via `vars_files`,
+deliberately kept as data, separate from the playbook's own logic, so the
+desired state can be reviewed/changed independently of the automation that
+enforces it.
+
+### 000_ntp_compliance_remediate.yml
+Gathers each device's current NTP server config via `ios_command`, computes
+which golden servers are missing using the `difference` filter, and pushes
+only the missing lines via `ios_config` - gated with `when: missing_servers
+| length > 0` so a fully compliant device skips the push entirely and
+reports `changed: false`.

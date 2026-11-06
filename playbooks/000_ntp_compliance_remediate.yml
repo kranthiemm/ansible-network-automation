@@ -1,0 +1,24 @@
+---
+- name: NTP Compliance check and remediation
+  gather_facts: false
+  hosts: cisco_ios
+
+  vars_files:
+    - "{{ playbook_dir }}/../golden_configs/ntp.yaml"
+
+  tasks:
+    - name: Gather current NTP config
+      cisco.ios.ios_command:
+        commands:
+          - show run | i ntp server
+      register: current_ntp
+    
+    - name: Figure out which golden servers are missing
+      ansible.builtin.set_fact:
+        missing_servers: "{{ ntp_servers | difference(current_ntp.stdout[0] | regex_findall('ntp server (\\S+)')) }}"
+
+    - name: Push only the missing servers
+      cisco.ios.ios_config:
+        lines: "{{ missing_servers | map('regex_replace', '^(.*)$', 'ntp server \\1') | list }}"
+      when: missing_servers | length > 0
+    
