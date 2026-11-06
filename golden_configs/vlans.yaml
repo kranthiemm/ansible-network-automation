@@ -1,0 +1,5 @@
+vlans:
+  - vlan_id: 100
+    name: TEST_VLAN
+  - vlan_id: 200
+    name: GUEST_VLAN
