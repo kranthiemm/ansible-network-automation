@@ -183,3 +183,8 @@ which golden servers are missing using the `difference` filter, and pushes
 only the missing lines via `ios_config` - gated with `when: missing_servers
 | length > 0` so a fully compliant device skips the push entirely and
 reports `changed: false`.
+
+### 001_vlan_push.yml
+Pushes VLAN 100 named `vlan_test` using `cisco.ios.ios_vlans` (a resource
+module, not `ios_config`) - declares desired end state rather than literal
+CLI lines, with `state: merged` to add without disturbing existing config.
