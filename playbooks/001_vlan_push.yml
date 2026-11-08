@@ -1,0 +1,17 @@
+---
+- name: push vlan to device
+  hosts: cisco_ios
+  gather_facts: false
+
+  tasks:
+    - name: Ensure vlan100 exist with name vlan_test
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: 100
+            name: vlan_test
+        state: merged
+      register: vlan_result
+
+    - name: show result
+      ansible.builtin.debug:
+        msg: "changed={{ vlan_result.changed }}"
