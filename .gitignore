@@ -9,3 +9,4 @@ __pycache__/
 inventory/host_vars/R1.yml
 inventory/dynamic/devices.csv
 collections/
+inventory/group_vars/cisco_ios.yml
